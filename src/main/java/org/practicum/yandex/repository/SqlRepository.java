@@ -7,9 +7,7 @@ public interface SqlRepository<ID, T> {
 
     List<T> findAll(final int page, final int size);
 
-    T create(final T postModel);
+    T save(final T postModel);
 
-    T update(final T updatedModel);
-
-    void deleteById(final ID id);
+    int deleteById(final ID id);
 }
