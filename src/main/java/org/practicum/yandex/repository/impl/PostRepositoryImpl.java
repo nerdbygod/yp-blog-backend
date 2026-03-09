@@ -32,12 +32,12 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public PostModel save(PostModel postModel) {
+    public PostModel save(PostModel entity) {
         return jdbcTemplate.queryForObject(
                 "INSERT INTO posts(title, content) VALUES (?, ?) RETURNING *",
                 (rs, rowNum) -> mapResultSet(rs),
-                postModel.getTitle(),
-                postModel.getContent()
+                entity.getTitle(),
+                entity.getContent()
         );
     }
 
