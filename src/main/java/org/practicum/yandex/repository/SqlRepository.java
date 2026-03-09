@@ -5,7 +5,7 @@ import java.util.List;
 public interface SqlRepository<ID, T> {
     T findById(final ID id);
 
-    List<T> findAll(final int page, final int size);
+    List<T> findAll();
 
     T save(final T postModel);
 
