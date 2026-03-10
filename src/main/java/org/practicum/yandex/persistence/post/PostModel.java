@@ -8,6 +8,8 @@ import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 import org.practicum.yandex.persistence.AbstractModel;
 
+import java.util.List;
+
 @Data
 @SuperBuilder
 @NoArgsConstructor
@@ -20,4 +22,7 @@ public class PostModel extends AbstractModel {
 
     @EqualsAndHashCode.Include
     private String content;
+
+    // Transient field
+    private List<String> tags;
 }
