@@ -4,48 +4,36 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.practicum.yandex.controller.dto.PostDto;
-import org.practicum.yandex.converter.PostDtoToModelConverter;
+import org.practicum.yandex.controller.dto.request.CreatePostRequest;
+import org.practicum.yandex.converter.PostRequestToModelConverter;
 import org.practicum.yandex.persistence.post.PostModel;
 import org.practicum.yandex.repository.PostRepository;
 import org.practicum.yandex.service.post.PostService;
-import org.practicum.yandex.service.validation.PostValidator;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
-    private final PostDtoToModelConverter postDtoToModelConverter;
+    private final PostRequestToModelConverter postRequestToModelConverter;
 
     @Override
     // FIXME: should be transactional
-    public PostModel createPost(PostDto postDto) {
-        if (Objects.isNull(postDto) || PostValidator.isInvalid(postDto)) {
-            throw new IllegalArgumentException("Invalid post data");
+    public PostModel createPost(final CreatePostRequest request) {
+        final var savedPost = postRepository.save(postRequestToModelConverter.convert(request));
+        final var tagNames = extractTags(request);
+
+        if (CollectionUtils.isNotEmpty(tagNames)) {
+            final var tagIds = postRepository.getOrInsertTags(tagNames);
+            postRepository.saveTags(savedPost.getId(), tagIds);
         }
 
-        try {
-            final var savedPost = postRepository.save(postDtoToModelConverter.convert(postDto));
-            final var tagNames = extractTags(postDto);
-
-            if (CollectionUtils.isNotEmpty(tagNames)) {
-                final var tagIds = postRepository.getOrInsertTags(tagNames);
-                postRepository.saveTags(savedPost.getId(), tagIds);
-            }
-
-            return postRepository.findById(savedPost.getId());
-        } catch (Exception e) {
-            // TODO: replace with custom exception
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return postRepository.findById(savedPost.getId());
     }
 
     @Override
@@ -83,9 +71,9 @@ public class PostServiceImpl implements PostService {
         return new byte[0];
     }
 
-    protected List<String> extractTags(final PostDto postDto) {
-        return Optional.ofNullable(postDto)
-                .map(PostDto::getTags)
+    protected List<String> extractTags(final CreatePostRequest request) {
+        return Optional.ofNullable(request)
+                .map(CreatePostRequest::getTags)
                 .filter(CollectionUtils::isNotEmpty)
                 .orElse(Collections.emptyList())
                 .stream()

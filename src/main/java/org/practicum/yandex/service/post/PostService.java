@@ -1,13 +1,14 @@
 package org.practicum.yandex.service.post;
 
 import org.practicum.yandex.controller.dto.PostDto;
+import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 import org.practicum.yandex.persistence.post.PostModel;
 
 import java.math.BigInteger;
 import java.util.List;
 
 public interface PostService {
-    PostModel createPost(final PostDto postDto);
+    PostModel createPost(final CreatePostRequest request);
 
     PostModel getPost(final BigInteger postId);
 

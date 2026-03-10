@@ -6,4 +6,8 @@ import lombok.experimental.UtilityClass;
 public class Constants {
     public static final String PROPERTIES_PATH = "classpath:application.properties";
     public static final String ROOT_PACKAGE = "org.practicum.yandex";
+
+    public static final class Controller {
+        public static final String API_POSTS = "/api/posts";
+    }
 }
