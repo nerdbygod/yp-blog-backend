@@ -1,22 +1,23 @@
 package org.practicum.yandex.persistence.post;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.math.BigInteger;
-import java.time.LocalDateTime;
+import lombok.experimental.FieldNameConstants;
+import lombok.experimental.SuperBuilder;
+import org.practicum.yandex.persistence.AbstractModel;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostModel {
-    private BigInteger id;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
+@FieldNameConstants
+@EqualsAndHashCode(callSuper = true)
+public class PostModel extends AbstractModel {
+    @EqualsAndHashCode.Include
     private String title;
+
+    @EqualsAndHashCode.Include
     private String content;
 }
