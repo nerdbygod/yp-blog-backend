@@ -16,4 +16,5 @@ public class PostDtoToModelConverter implements Converter<PostDto, PostModel> {
                 .content(StringUtils.trimToEmpty(source.getText()))
                 .build();
     }
+
 }
