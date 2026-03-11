@@ -1,9 +1,10 @@
 package org.practicum.yandex.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SqlRepository<ID, T> {
-    T findById(final ID id);
+    Optional<T> findById(final ID id);
 
     List<T> findAll();
 

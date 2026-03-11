@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.practicum.yandex.persistence.AbstractModel;
 import org.practicum.yandex.persistence.post.PostModel;
 import org.practicum.yandex.repository.PostRepository;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -15,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class PostRepositoryImpl implements PostRepository {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public PostModel findById(BigInteger id) {
+    public Optional<PostModel> findById(BigInteger id) {
         final var query = """
                 SELECT p.id AS post_id,
                        p.title,
@@ -36,7 +38,13 @@ public class PostRepositoryImpl implements PostRepository {
                 WHERE post_id = ?
                 """;
 
-        return jdbcTemplate.query(query, (rs, row) -> mapToPostModelWithTags(rs), id).getFirst();
+        try {
+            final var postModel = jdbcTemplate.queryForObject(query, (rs, row) -> mapToPostModelWithTags(rs), id);
+
+            return Optional.of(postModel);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     @Override
