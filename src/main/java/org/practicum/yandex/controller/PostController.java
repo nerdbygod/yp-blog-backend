@@ -8,13 +8,12 @@ import org.practicum.yandex.converter.PostModelToDtoConverter;
 import org.practicum.yandex.service.post.PostService;
 import org.practicum.yandex.service.validation.RequestValidator;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigInteger;
 import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,5 +34,12 @@ public class PostController {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
+    }
+
+    @PostMapping("/{postId}")
+    public PostDto getPostById(final @PathVariable(Constants.Controller.POST_ID) BigInteger postId) {
+        return Optional.ofNullable(postService.getPost(postId))
+                .map(postModelToDtoConverter::convert)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 }

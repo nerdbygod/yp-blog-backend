@@ -9,6 +9,7 @@ import org.practicum.yandex.converter.PostRequestToModelConverter;
 import org.practicum.yandex.persistence.post.PostModel;
 import org.practicum.yandex.repository.PostRepository;
 import org.practicum.yandex.service.post.PostService;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -33,12 +34,13 @@ public class PostServiceImpl implements PostService {
             postRepository.saveTags(savedPost.getId(), tagIds);
         }
 
-        return postRepository.findById(savedPost.getId());
+        return postRepository.findById(savedPost.getId()).orElseThrow();
     }
 
     @Override
+    @Nullable
     public PostModel getPost(BigInteger postId) {
-        return null;
+        return postRepository.findById(postId).orElse(null);
     }
 
     @Override
