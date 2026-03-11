@@ -12,5 +12,7 @@ public interface SqlRepository<ID, T> {
 
     int deleteById(final ID id);
 
-    T update(final T entity);
+    T update(ID id, final T updatedEntity);
+
+    boolean existsById(final ID id);
 }

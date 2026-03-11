@@ -3,7 +3,6 @@ package org.practicum.yandex.service.post.impl;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.practicum.yandex.controller.dto.PostDto;
 import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 import org.practicum.yandex.converter.PostRequestToModelConverter;
 import org.practicum.yandex.persistence.post.PostModel;
@@ -44,13 +43,32 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostModel updatePost(BigInteger postId, PostDto updatedPost) {
-        return null;
+    // FIXME: should be transactional
+    public PostModel updatePost(BigInteger postId, CreatePostRequest request) {
+        final var postModel = PostModel.builder()
+                .title(request.getTitle())
+                .content(request.getTitle())
+                .build();
+
+        postRepository.update(postId, postModel);
+        postRepository.removePostTags(postId);
+
+        if (CollectionUtils.isNotEmpty(request.getTags())) {
+            final var tagIds = postRepository.getOrInsertTags(request.getTags());
+            postRepository.saveTags(postId, tagIds);
+        }
+
+        return postRepository.findById(postId).orElseThrow();
     }
 
     @Override
     public List<PostModel> getPosts(String query, int page, int size) {
         return null;
+    }
+
+    @Override
+    public boolean postExists(BigInteger postId) {
+        return postRepository.existsById(postId);
     }
 
     @Override

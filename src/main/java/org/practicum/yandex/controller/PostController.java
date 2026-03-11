@@ -42,4 +42,24 @@ public class PostController {
                 .map(postModelToDtoConverter::convert)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
+
+    @PutMapping("/{postId}")
+    public PostDto updatePost(final @PathVariable(Constants.Controller.POST_ID) BigInteger postId,
+                              final @RequestBody CreatePostRequest request) {
+        if (Objects.isNull(request) || RequestValidator.isInvalid(request)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request data");
+        }
+
+        if (!postService.postExists(postId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            final var updatedPostModel = postService.updatePost(postId, request);
+
+            return postModelToDtoConverter.convert(updatedPostModel);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 }

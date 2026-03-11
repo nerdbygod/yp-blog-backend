@@ -82,6 +82,31 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    public PostModel update(BigInteger id, PostModel updatedEntity) {
+        final var query = """
+                UPDATE posts
+                SET title = ?, content = ?
+                WHERE id = ?
+                RETURNING *
+                """;
+
+        return jdbcTemplate.queryForObject(
+                query, (rs, rowNum) -> mapToPostModel(rs),
+                updatedEntity.getTitle(),
+                updatedEntity.getContent(),
+                id
+        );
+    }
+
+    @Override
+    public boolean existsById(BigInteger id) {
+        return jdbcTemplate.queryForObject(
+                "SELECT EXISTS(SELECT 1 FROM posts WHERE id = ?)",
+                Boolean.class, id
+        );
+    }
+
+    @Override
     public List<BigInteger> getOrInsertTags(List<String> tagNames) {
         final var query = """
                 WITH input_tags AS (
@@ -119,9 +144,14 @@ public class PostRepositoryImpl implements PostRepository {
         // TODO: implement filtering by query
         return jdbcTemplate.query(
                 "SELECT * FROM posts ORDER BY updated_at LIMIT ? OFFSET ?",
-                (rs, row) -> mapToPostModel(rs),
+                (rs, row) -> mapToPostModelWithTransientFields(rs),
                 size, page * size
         );
+    }
+
+    @Override
+    public void removePostTags(BigInteger postId) {
+        jdbcTemplate.update("DELETE FROM post_tags WHERE post_id = ?", postId);
     }
 
     protected static PostModel mapToPostModelWithTags(final ResultSet rs) throws SQLException {
@@ -129,7 +159,7 @@ public class PostRepositoryImpl implements PostRepository {
 
         while (rs.next()) {
             if (postModel == null) {
-                postModel = mapToPostModel(rs);
+                postModel = mapToPostModelWithTransientFields(rs);
             }
 
             final var tagName = rs.getString("tag_name");
@@ -161,6 +191,16 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     protected static PostModel mapToPostModel(final ResultSet resultSet) throws SQLException {
+        return PostModel.builder()
+                .id(resultSet.getBigDecimal(AbstractModel.Fields.id).toBigInteger())
+                .title(resultSet.getString(PostModel.Fields.title))
+                .content(resultSet.getString(PostModel.Fields.content))
+                .createdAt(resultSet.getTimestamp("created_at").toLocalDateTime())
+                .updatedAt(resultSet.getTimestamp("updated_at").toLocalDateTime())
+                .build();
+    }
+
+    protected static PostModel mapToPostModelWithTransientFields(final ResultSet resultSet) throws SQLException {
         return PostModel.builder()
                 .id(resultSet.getBigDecimal("post_id").toBigInteger())
                 .title(resultSet.getString("p.title"))
