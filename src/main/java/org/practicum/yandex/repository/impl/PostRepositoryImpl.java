@@ -33,7 +33,7 @@ public class PostRepositoryImpl implements PostRepository {
                        (SELECT COALESCE(l.lcount, 0) FROM likes l WHERE l.post_id = p.id) AS like_count,
                        (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
                 FROM posts p
-                LEFT JOIN posts_tags pt ON p.id = pt.post_id
+                LEFT JOIN post_tags pt ON p.id = pt.post_id
                 LEFT JOIN tags t ON pt.tag_id = t.id
                 WHERE post_id = ?
                 """;
@@ -58,7 +58,7 @@ public class PostRepositoryImpl implements PostRepository {
                        (SELECT COALESCE(l.lcount, 0) FROM likes l WHERE l.post_id = p.id) AS like_count,
                        (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
                 FROM posts p
-                LEFT JOIN posts_tags pt ON p.id = pt.post_id
+                LEFT JOIN post_tags pt ON p.id = pt.post_id
                 LEFT JOIN tags t ON pt.tag_id = t.id
                 ORDER BY p.updated_at DESC
                 """;
@@ -109,7 +109,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public void saveTags(final BigInteger postId, final List<BigInteger> tagIds) {
-        final var query = "INSERT INTO posts_tags (post_id, tag_id) VALUES (?, ?)";
+        final var query = "INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)";
 
         jdbcTemplate.batchUpdate(query, getPostTagsBatchPreparedStatementSetter(postId, tagIds));
     }

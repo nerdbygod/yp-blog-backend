@@ -11,4 +11,6 @@ public interface SqlRepository<ID, T> {
     T save(final T entity);
 
     int deleteById(final ID id);
+
+    T update(final T entity);
 }
