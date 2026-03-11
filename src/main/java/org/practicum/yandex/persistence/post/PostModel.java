@@ -23,6 +23,8 @@ public class PostModel extends AbstractModel {
     @EqualsAndHashCode.Include
     private String content;
 
-    // Transient field
+    // Transient fields
     private List<String> tags;
+    private long likeCount;
+    private long commentCount;
 }

@@ -27,7 +27,9 @@ public class PostRepositoryImpl implements PostRepository {
                 SELECT p.id AS post_id,
                        p.title,
                        p.content,
-                       t.name AS tag_name
+                       t.name AS tag_name,
+                       (SELECT COALESCE(l.lcount, 0) FROM likes l WHERE l.post_id = p.id) AS like_count,
+                       (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
                 FROM posts p
                 LEFT JOIN posts_tags pt ON p.id = pt.post_id
                 LEFT JOIN tags t ON pt.tag_id = t.id
@@ -43,10 +45,14 @@ public class PostRepositoryImpl implements PostRepository {
                 SELECT p.id AS post_id,
                        p.title,
                        p.content,
-                       t.name AS tag_name
+                       p.updated_at,
+                       t.name AS tag_name,
+                       (SELECT COALESCE(l.lcount, 0) FROM likes l WHERE l.post_id = p.id) AS like_count,
+                       (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
                 FROM posts p
                 LEFT JOIN posts_tags pt ON p.id = pt.post_id
                 LEFT JOIN tags t ON pt.tag_id = t.id
+                ORDER BY p.updated_at DESC
                 """;
 
         return jdbcTemplate.query(query, (rs, rowNum) -> mapToPostModelWithTags(rs));
@@ -152,6 +158,8 @@ public class PostRepositoryImpl implements PostRepository {
                 .title(resultSet.getString("p.title"))
                 .content(resultSet.getString("p.content"))
                 .tags(new ArrayList<>())
+                .likeCount(resultSet.getLong("like_count"))
+                .commentCount(resultSet.getLong("comment_count"))
                 .createdAt(resultSet.getTimestamp("created_at").toLocalDateTime())
                 .updatedAt(resultSet.getTimestamp("updated_at").toLocalDateTime())
                 .build();
