@@ -2,6 +2,7 @@ package org.practicum.yandex.service.post;
 
 import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 import org.practicum.yandex.persistence.post.PostModel;
+import org.practicum.yandex.service.exception.DataNotFoundException;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -17,7 +18,7 @@ public interface PostService {
 
     boolean postExists(final BigInteger postId);
 
-    void deletePost(final BigInteger postId);
+    void deletePost(final BigInteger postId) throws DataNotFoundException;
 
     int incrementLikes(final BigInteger postId);
 

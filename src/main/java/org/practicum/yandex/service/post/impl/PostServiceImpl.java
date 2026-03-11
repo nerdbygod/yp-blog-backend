@@ -7,6 +7,7 @@ import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 import org.practicum.yandex.converter.PostRequestToModelConverter;
 import org.practicum.yandex.persistence.post.PostModel;
 import org.practicum.yandex.repository.PostRepository;
+import org.practicum.yandex.service.exception.DataNotFoundException;
 import org.practicum.yandex.service.post.PostService;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -72,8 +73,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void deletePost(BigInteger postId) {
+    public void deletePost(BigInteger postId) throws DataNotFoundException {
+        final var deleted = postRepository.deleteById(postId) > 0;
 
+        if (!deleted) {
+            throw new DataNotFoundException();
+        }
     }
 
     @Override

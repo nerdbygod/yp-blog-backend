@@ -5,9 +5,11 @@ import org.practicum.yandex.Constants;
 import org.practicum.yandex.controller.dto.PostDto;
 import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 import org.practicum.yandex.converter.PostModelToDtoConverter;
+import org.practicum.yandex.service.exception.DataNotFoundException;
 import org.practicum.yandex.service.post.PostService;
 import org.practicum.yandex.service.validation.RequestValidator;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -60,6 +62,20 @@ public class PostController {
             return postModelToDtoConverter.convert(updatedPostModel);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Void> deletePost(final @PathVariable(Constants.Controller.POST_ID) BigInteger postId) {
+        try {
+            postService.deletePost(postId);
+
+            return ResponseEntity.ok().build();
+        } catch (DataNotFoundException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    String.format("Post with id %d not found", postId.longValue())
+            );
         }
     }
 }
