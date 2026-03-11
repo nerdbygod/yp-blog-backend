@@ -154,6 +154,15 @@ public class PostRepositoryImpl implements PostRepository {
         jdbcTemplate.update("DELETE FROM post_tags WHERE post_id = ?", postId);
     }
 
+    @Override
+    public BigInteger incrementLikes(BigInteger postId) {
+        return jdbcTemplate.queryForObject(
+                "UPDATE posts SET lcount = lcount + 1 WHERE id = ? RETURNING lcount",
+                BigInteger.class,
+                postId
+        );
+    }
+
     protected static PostModel mapToPostModelWithTags(final ResultSet rs) throws SQLException {
         PostModel postModel = null;
 

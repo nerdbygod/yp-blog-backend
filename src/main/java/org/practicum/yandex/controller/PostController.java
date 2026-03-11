@@ -78,4 +78,15 @@ public class PostController {
             );
         }
     }
+
+    @PostMapping("/{postId}/likes")
+    public ResponseEntity<BigInteger> likePost(final @PathVariable(Constants.Controller.POST_ID) BigInteger postId) {
+        if (!postService.postExists(postId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        final var updatedLikes = postService.incrementLikes(postId);
+
+        return ResponseEntity.ok().body(updatedLikes);
+    }
 }

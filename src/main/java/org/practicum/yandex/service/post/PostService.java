@@ -20,7 +20,7 @@ public interface PostService {
 
     void deletePost(final BigInteger postId) throws DataNotFoundException;
 
-    int incrementLikes(final BigInteger postId);
+    BigInteger incrementLikes(final BigInteger postId);
 
     void updatePostImage(byte[] content);
 

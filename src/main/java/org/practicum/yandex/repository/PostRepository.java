@@ -10,4 +10,5 @@ public interface PostRepository extends SqlRepository<BigInteger, PostModel> {
     List<BigInteger> getOrInsertTags(final List<String> tagNames);
     List<PostModel> findPaged(final int page, final int size, String query);
     void removePostTags(final BigInteger postId);
+    BigInteger incrementLikes(final BigInteger postId);
 }

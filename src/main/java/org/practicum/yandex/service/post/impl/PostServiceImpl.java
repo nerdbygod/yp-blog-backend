@@ -82,8 +82,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public int incrementLikes(BigInteger postId) {
-        return 0;
+    public BigInteger incrementLikes(BigInteger postId) {
+        return postRepository.incrementLikes(postId);
     }
 
     @Override
