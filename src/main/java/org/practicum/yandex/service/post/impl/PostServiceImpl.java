@@ -104,6 +104,8 @@ public class PostServiceImpl implements PostService {
                 .stream()
                 .filter(StringUtils::isNotBlank)
                 .map(StringUtils::normalizeSpace)
+                .map(tag -> tag.replace(Constants.HASHTAG, StringUtils.EMPTY))
+                .filter(StringUtils::isNotBlank)
                 .toList();
     }
 }
