@@ -52,25 +52,6 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public List<PostModel> findAll() {
-        final var query = """
-                SELECT p.id AS post_id,
-                       p.title,
-                       p.content,
-                       p.updated_at,
-                       t.name AS tag_name,
-                       (SELECT COALESCE(l.lcount, 0) FROM likes l WHERE l.post_id = p.id) AS like_count,
-                       (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
-                FROM posts p
-                LEFT JOIN post_tags pt ON p.id = pt.post_id
-                LEFT JOIN tags t ON pt.tag_id = t.id
-                ORDER BY p.updated_at DESC
-                """;
-
-        return jdbcTemplate.query(query, (rs, rowNum) -> mapToPostModelWithTags(rs));
-    }
-
-    @Override
     public PostModel save(PostModel entity) {
         return jdbcTemplate.queryForObject(
                 "INSERT INTO posts(title, content) VALUES (?, ?) RETURNING *",
