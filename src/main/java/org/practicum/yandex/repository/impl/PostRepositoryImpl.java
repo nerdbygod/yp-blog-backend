@@ -144,7 +144,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public Page<PostModel> findPaged(int page, int size, String query, Set<String> tags) {
+    public Page<PostModel> findPaged(long page, long size, String query, Set<String> tags) {
         final var params = new MapSqlParameterSource();
 
         params.addValue("limit", size);

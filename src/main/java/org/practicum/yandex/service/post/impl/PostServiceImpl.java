@@ -3,12 +3,14 @@ package org.practicum.yandex.service.post.impl;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.practicum.yandex.Constants;
 import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 import org.practicum.yandex.converter.PostRequestToModelConverter;
 import org.practicum.yandex.persistence.post.PostModel;
 import org.practicum.yandex.repository.PostRepository;
 import org.practicum.yandex.service.exception.DataNotFoundException;
 import org.practicum.yandex.service.post.PostService;
+import org.practicum.yandex.service.post.dto.PostDataWrapper;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,7 @@ import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -63,8 +66,27 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostModel> getPosts(String query, int page, int size) {
-        return null;
+    public PostDataWrapper getPosts(long page, long size, String query, Set<String> tags) {
+        final var postModelPage = postRepository.findPaged(page, size, query, tags);
+
+        final var totalPosts = postModelPage.getCount();
+
+        if (totalPosts > 0) {
+            final var totalPages = totalPosts % size == 0 ? totalPosts / size : (totalPosts / size) + 1;
+
+            return PostDataWrapper.builder()
+                    .posts(postModelPage.getData())
+                    .count(postModelPage.getCount())
+                    .hasPrev(page > 1)
+                    .hasNext(page < totalPages)
+                    .lastPage(totalPages)
+                    .build();
+        }
+
+        return PostDataWrapper.builder()
+                .posts(Collections.emptyList())
+                .count(0L)
+                .build();
     }
 
     @Override
