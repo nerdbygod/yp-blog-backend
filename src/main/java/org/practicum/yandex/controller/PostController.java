@@ -1,9 +1,12 @@
 package org.practicum.yandex.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.practicum.yandex.Constants;
 import org.practicum.yandex.controller.dto.PostDto;
 import org.practicum.yandex.controller.dto.request.CreatePostRequest;
+import org.practicum.yandex.controller.dto.response.GetPostListResponse;
 import org.practicum.yandex.converter.PostModelToDtoConverter;
 import org.practicum.yandex.service.exception.DataNotFoundException;
 import org.practicum.yandex.service.post.PostService;
@@ -14,8 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigInteger;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,6 +46,50 @@ public class PostController {
         return Optional.ofNullable(postService.getPost(postId))
                 .map(postModelToDtoConverter::convert)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping
+    public GetPostListResponse getPosts(final @RequestParam(value = "search", required = false) String query,
+                                        final @RequestParam("pageNumber") Long page,
+                                        final @RequestParam("pageSize") Long size) {
+        String searchQuery = null;
+        final var tags = new HashSet<String>();
+
+        if (StringUtils.isNotBlank(query)) {
+            final var normalizedQuery = StringUtils.normalizeSpace(query);
+            final var tokens = normalizedQuery.split(StringUtils.SPACE);
+
+            final var searchTerms = new ArrayList<String>();
+
+            Arrays.stream(tokens)
+                    .filter(StringUtils::isNotBlank)
+                    .forEach(token -> {
+                        if (token.startsWith(Constants.HASHTAG)) {
+                            final var tag = token.replaceFirst(Constants.HASHTAG, StringUtils.EMPTY);
+                            if (StringUtils.isNotBlank(tag)) {
+                                tags.add(tag);
+                            }
+                        } else {
+                            searchTerms.add(token);
+                        }
+                    });
+
+            if (CollectionUtils.isNotEmpty(searchTerms)) {
+                searchQuery = String.join(StringUtils.SPACE, searchTerms);
+            }
+        }
+
+        final var postDataWrapper = postService.getPosts(page, size, searchQuery, tags);
+
+        return GetPostListResponse.builder()
+                .posts(postDataWrapper.getPosts()
+                        .stream()
+                        .map(postModelToDtoConverter::convert)
+                        .toList())
+                .hasNext(postDataWrapper.isHasNext())
+                .hasPrev(postDataWrapper.isHasPrev())
+                .lastPage(postDataWrapper.getLastPage())
+                .build();
     }
 
     @PutMapping("/{postId}")
