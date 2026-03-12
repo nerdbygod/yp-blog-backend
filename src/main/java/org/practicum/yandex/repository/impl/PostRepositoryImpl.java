@@ -1,12 +1,17 @@
 package org.practicum.yandex.repository.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.practicum.yandex.persistence.AbstractModel;
 import org.practicum.yandex.persistence.post.PostModel;
+import org.practicum.yandex.repository.Page;
 import org.practicum.yandex.repository.PostRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -14,14 +19,13 @@ import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
 public class PostRepositoryImpl implements PostRepository {
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
     public Optional<PostModel> findById(BigInteger id) {
@@ -140,13 +144,84 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public List<PostModel> findPaged(int page, int size, String query) {
-        // TODO: implement filtering by query
-        return jdbcTemplate.query(
-                "SELECT * FROM posts ORDER BY updated_at LIMIT ? OFFSET ?",
-                (rs, row) -> mapToPostModelWithTransientFields(rs),
-                size, page * size
+    public Page<PostModel> findPaged(int page, int size, String query, Set<String> tags) {
+        final var params = new MapSqlParameterSource();
+
+        params.addValue("limit", size);
+        params.addValue("offset", page * size);
+
+        final var whereClause = new StringBuilder(" WHERE 1=1 ");
+
+        if (StringUtils.isNotBlank(query)) {
+            whereClause.append("AND p.title ILIKE :searchQuery ");
+            params.addValue("searchQuery", "%" + query + "%");
+        }
+
+        String havingClause = "";
+        if (CollectionUtils.isNotEmpty(tags)) {
+            whereClause.append("AND t.name IN (:tags) ");
+            params.addValue("tags", tags);
+            params.addValue("tagCount", tags.size());
+            havingClause = "HAVING COUNT(DISTINCT t.name) = :tagCount";
+        }
+
+        final var sql = String.format("""
+                        WITH filtered_posts AS (
+                            SELECT p.id, p.title, p.content, p.updated_at, p.created_at,
+                            COUNT(*) OVER() AS total_matches
+                            FROM posts p
+                            JOIN post_tags pt ON p.id = pt.post_id
+                            JOIN tags t ON pt.tag_id = t.id
+                            %s
+                            GROUP by p.id
+                            %s
+                            ORDER BY p.updated_at DESC
+                            LIMIT :limit OFFSET :offset
+                        )
+                        SELECT fp.id AS post_id,
+                               fp.title as title,
+                               CASE
+                                   WHEN LENGTH(fp.content) > 128 THEN LEFT(fp.content, 128) || '...'
+                                   ELSE fp.content
+                               END AS preview,
+                               fp.updated_at,
+                               fp.created_at,
+                               t.name as tag_name,
+                               (SELECT COALESCE(l.lcount, 0) FROM likes l WHERE l.post_id = p.id) AS like_count,
+                               (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
+                        FROM filtered_posts fp
+                        LEFT JOIN post_tags pt ON fp.id = pt.post_id
+                        LEFT JOIN tags t ON pt.tag_id = t.id;
+                        ORDER BY fp.updated_at DECS
+                        """,
+                whereClause, havingClause
         );
+
+        return namedParameterJdbcTemplate.query(
+                sql, params, rs -> {
+                    final var results = new LinkedHashMap<BigInteger, PostModel>();
+
+                    while (rs.next()) {
+                        final var postId = rs.getBigDecimal("post_id").toBigInteger();
+                        final var postModel = results.computeIfAbsent(postId, id -> {
+                            try {
+                                return mapToPreviewPostModel(rs);
+                            } catch (SQLException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+
+                        final var tagName = rs.getString("tag_name");
+                        if (Objects.nonNull(tagName)) {
+                            postModel.getTags().add(tagName);
+                        }
+                    }
+
+                    return Page.<PostModel>builder()
+                            .data(new ArrayList<>(results.values()))
+                            .count(rs.getLong("total_matches"))
+                            .build();
+                });
     }
 
     @Override
@@ -214,6 +289,19 @@ public class PostRepositoryImpl implements PostRepository {
                 .id(resultSet.getBigDecimal("post_id").toBigInteger())
                 .title(resultSet.getString("p.title"))
                 .content(resultSet.getString("p.content"))
+                .tags(new ArrayList<>())
+                .likeCount(resultSet.getLong("like_count"))
+                .commentCount(resultSet.getLong("comment_count"))
+                .createdAt(resultSet.getTimestamp("created_at").toLocalDateTime())
+                .updatedAt(resultSet.getTimestamp("updated_at").toLocalDateTime())
+                .build();
+    }
+
+    protected static PostModel mapToPreviewPostModel(final ResultSet resultSet) throws SQLException {
+        return PostModel.builder()
+                .id(resultSet.getBigDecimal("post_id").toBigInteger())
+                .title(resultSet.getString("title"))
+                .content(resultSet.getString("preview"))
                 .tags(new ArrayList<>())
                 .likeCount(resultSet.getLong("like_count"))
                 .commentCount(resultSet.getLong("comment_count"))
