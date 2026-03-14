@@ -23,6 +23,9 @@ dependencies {
 
     implementation 'org.apache.commons:commons-lang3:3.20.0'
     implementation 'org.apache.commons:commons-collections4:4.5.0'
+    implementation 'org.apache.tika:tika-core:3.2.3'
+    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+    implementation 'ch.qos.logback:logback-classic:1.5.32'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
