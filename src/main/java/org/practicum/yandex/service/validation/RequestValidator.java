@@ -1,20 +1,31 @@
 package org.practicum.yandex.service.validation;
 
 import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.practicum.yandex.controller.dto.CommentDto;
+import org.practicum.yandex.controller.dto.request.AddCommentRequest;
 import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Objects;
+
 @UtilityClass
 public class RequestValidator {
-    public static boolean isValid(final CreatePostRequest request) {
+    public static boolean isInvalid(final CreatePostRequest request) {
         return StringUtils.isBlank(request.getText()) ||
                 StringUtils.isBlank(request.getTitle()) ||
                 CollectionUtils.isEmpty(request.getTags()) ||
                 request.getTags().stream().noneMatch(StringUtils::isNotBlank);
     }
 
-    public static boolean isInvalid(final CreatePostRequest postDto) {
-        return !isValid(postDto);
+    public static boolean isInvalid(final AddCommentRequest request) {
+        return Objects.isNull(request.getPostId()) ||
+                StringUtils.isBlank(request.getText());
+    }
+
+    public static boolean isInvalid(final CommentDto commentDto) {
+        return StringUtils.isBlank(commentDto.getText()) ||
+                ObjectUtils.anyNull(commentDto.getId(), commentDto.getPostId());
     }
 }
