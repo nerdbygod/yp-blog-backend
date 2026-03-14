@@ -19,12 +19,12 @@ import java.util.Objects;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(Constants.Controller.API_POSTS)
+@RequestMapping(Constants.Controller.API_POSTS + "/{postId}/image")
 public class ImageController {
     private final ImageService imageService;
     private final PostService postService;
 
-    @PutMapping("/{postId}/image")
+    @PutMapping
     public ResponseEntity<Void> uploadImage(final @PathVariable(Constants.Controller.POST_ID) Long postId,
                                             final @RequestParam("filename") MultipartFile file) {
         if (!postService.postExists(postId)) {
@@ -48,7 +48,7 @@ public class ImageController {
         }
     }
 
-    @GetMapping("/{postId}/image")
+    @GetMapping
     public ResponseEntity<Resource> downloadImage(
             final @PathVariable(Constants.Controller.POST_ID) Long postId) {
 
