@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import lombok.experimental.SuperBuilder;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Data
@@ -18,7 +17,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public abstract class AbstractModel {
     @EqualsAndHashCode.Include
-    private BigInteger id;
+    private Long id;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -14,7 +14,6 @@ import org.practicum.yandex.service.post.dto.PostDataWrapper;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
-import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -42,13 +41,13 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Nullable
-    public PostModel getPost(BigInteger postId) {
+    public PostModel getPost(Long postId) {
         return postRepository.findById(postId).orElse(null);
     }
 
     @Override
     // FIXME: should be transactional
-    public PostModel updatePost(BigInteger postId, CreatePostRequest request) {
+    public PostModel updatePost(Long postId, CreatePostRequest request) {
         final var postModel = PostModel.builder()
                 .title(request.getTitle())
                 .content(request.getTitle())
@@ -90,12 +89,12 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public boolean postExists(BigInteger postId) {
+    public boolean postExists(Long postId) {
         return postRepository.existsById(postId);
     }
 
     @Override
-    public void deletePost(BigInteger postId) throws DataNotFoundException {
+    public void deletePost(Long postId) throws DataNotFoundException {
         final var deleted = postRepository.deleteById(postId) > 0;
 
         if (!deleted) {
@@ -104,7 +103,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public BigInteger incrementLikes(BigInteger postId) {
+    public Long incrementLikes(Long postId) {
         return postRepository.incrementLikes(postId);
     }
 
@@ -114,7 +113,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public byte[] getPostImage(BigInteger postId) {
+    public byte[] getPostImage(Long postId) {
         return new byte[0];
     }
 

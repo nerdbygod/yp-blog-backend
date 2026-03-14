@@ -5,25 +5,24 @@ import org.practicum.yandex.persistence.post.PostModel;
 import org.practicum.yandex.service.exception.DataNotFoundException;
 import org.practicum.yandex.service.post.dto.PostDataWrapper;
 
-import java.math.BigInteger;
 import java.util.Set;
 
 public interface PostService {
     PostModel createPost(final CreatePostRequest request);
 
-    PostModel getPost(final BigInteger postId);
+    PostModel getPost(final Long postId);
 
-    PostModel updatePost(final BigInteger postId, final CreatePostRequest request);
+    PostModel updatePost(final Long postId, final CreatePostRequest request);
 
     PostDataWrapper getPosts(final long page, final long size, final String query, final Set<String> tags);
 
-    boolean postExists(final BigInteger postId);
+    boolean postExists(final Long postId);
 
-    void deletePost(final BigInteger postId) throws DataNotFoundException;
+    void deletePost(final Long postId) throws DataNotFoundException;
 
-    BigInteger incrementLikes(final BigInteger postId);
+    Long incrementLikes(final Long postId);
 
     void updatePostImage(byte[] content);
 
-    byte[] getPostImage(final BigInteger postId);
+    byte[] getPostImage(final Long postId);
 }

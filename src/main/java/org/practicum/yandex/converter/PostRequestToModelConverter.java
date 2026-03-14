@@ -1,7 +1,6 @@
 package org.practicum.yandex.converter;
 
 import org.apache.commons.lang3.StringUtils;
-import org.practicum.yandex.controller.dto.PostDto;
 import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 import org.practicum.yandex.persistence.post.PostModel;
 import org.springframework.core.convert.converter.Converter;

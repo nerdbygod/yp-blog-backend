@@ -14,8 +14,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,7 +26,7 @@ public class PostRepositoryImpl implements PostRepository {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
-    public Optional<PostModel> findById(BigInteger id) {
+    public Optional<PostModel> findById(Long id) {
         final var query = """
                 SELECT p.id AS post_id,
                        p.title,
@@ -62,12 +60,12 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public int deleteById(BigInteger id) {
+    public int deleteById(Long id) {
         return jdbcTemplate.update("DELETE FROM posts WHERE id = ?", id);
     }
 
     @Override
-    public PostModel update(BigInteger id, PostModel updatedEntity) {
+    public PostModel update(Long id, PostModel updatedEntity) {
         final var query = """
                 UPDATE posts
                 SET title = ?, content = ?
@@ -84,7 +82,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public boolean existsById(BigInteger id) {
+    public boolean existsById(Long id) {
         return jdbcTemplate.queryForObject(
                 "SELECT EXISTS(SELECT 1 FROM posts WHERE id = ?)",
                 Boolean.class, id
@@ -92,7 +90,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public List<BigInteger> getOrInsertTags(List<String> tagNames) {
+    public List<Long> getOrInsertTags(List<String> tagNames) {
         final var query = """
                 WITH input_tags AS (
                     SELECT unnest(?::text[]) AS name
@@ -112,13 +110,13 @@ public class PostRepositoryImpl implements PostRepository {
 
         return jdbcTemplate.query(
                 query,
-                (rs, rowNum) -> rs.getBigDecimal(AbstractModel.Fields.id).toBigInteger(),
+                (rs, rowNum) -> rs.getLong(AbstractModel.Fields.id),
                 tagNames.toArray()
         );
     }
 
     @Override
-    public void saveTags(final BigInteger postId, final List<BigInteger> tagIds) {
+    public void saveTags(final Long postId, final List<Long> tagIds) {
         final var query = "INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)";
 
         jdbcTemplate.batchUpdate(query, getPostTagsBatchPreparedStatementSetter(postId, tagIds));
@@ -180,10 +178,10 @@ public class PostRepositoryImpl implements PostRepository {
 
         return namedParameterJdbcTemplate.query(
                 sql, params, rs -> {
-                    final var results = new LinkedHashMap<BigInteger, PostModel>();
+                    final var results = new LinkedHashMap<Long, PostModel>();
 
                     while (rs.next()) {
-                        final var postId = rs.getBigDecimal("post_id").toBigInteger();
+                        final var postId = rs.getLong("post_id");
                         final var postModel = results.computeIfAbsent(postId, id -> {
                             try {
                                 return mapToPreviewPostModel(rs);
@@ -206,15 +204,15 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public void removePostTags(BigInteger postId) {
+    public void removePostTags(Long postId) {
         jdbcTemplate.update("DELETE FROM post_tags WHERE post_id = ?", postId);
     }
 
     @Override
-    public BigInteger incrementLikes(BigInteger postId) {
+    public Long incrementLikes(Long postId) {
         return jdbcTemplate.queryForObject(
                 "UPDATE posts SET lcount = lcount + 1 WHERE id = ? RETURNING lcount",
-                BigInteger.class,
+                Long.class,
                 postId
         );
     }
@@ -237,14 +235,13 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     private static BatchPreparedStatementSetter getPostTagsBatchPreparedStatementSetter(
-            BigInteger postId,
-            List<BigInteger> tagIds
-    ) {
+            Long postId, List<Long> tagIds) {
+
         return new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setBigDecimal(1, BigDecimal.valueOf(postId.doubleValue()));
-                ps.setBigDecimal(2, BigDecimal.valueOf(tagIds.get(i).doubleValue()));
+                ps.setLong(1, postId);
+                ps.setLong(2, tagIds.get(i));
             }
 
             @Override
@@ -257,7 +254,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     protected static PostModel mapToPostModel(final ResultSet resultSet) throws SQLException {
         return PostModel.builder()
-                .id(resultSet.getBigDecimal(AbstractModel.Fields.id).toBigInteger())
+                .id(resultSet.getLong(AbstractModel.Fields.id))
                 .title(resultSet.getString(PostModel.Fields.title))
                 .content(resultSet.getString(PostModel.Fields.content))
                 .createdAt(resultSet.getTimestamp("created_at").toLocalDateTime())
@@ -267,7 +264,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     protected static PostModel mapToPostModelWithTransientFields(final ResultSet resultSet) throws SQLException {
         return PostModel.builder()
-                .id(resultSet.getBigDecimal("post_id").toBigInteger())
+                .id(resultSet.getLong("post_id"))
                 .title(resultSet.getString("p.title"))
                 .content(resultSet.getString("p.content"))
                 .tags(new ArrayList<>())
@@ -280,7 +277,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     protected static PostModel mapToPreviewPostModel(final ResultSet resultSet) throws SQLException {
         return PostModel.builder()
-                .id(resultSet.getBigDecimal("post_id").toBigInteger())
+                .id(resultSet.getLong("post_id"))
                 .title(resultSet.getString("title"))
                 .content(resultSet.getString("preview"))
                 .tags(new ArrayList<>())

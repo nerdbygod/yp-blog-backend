@@ -16,9 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigInteger;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,7 +40,7 @@ public class PostController {
     }
 
     @PostMapping("/{postId}")
-    public PostDto getPostById(final @PathVariable(Constants.Controller.POST_ID) BigInteger postId) {
+    public PostDto getPostById(final @PathVariable(Constants.Controller.POST_ID) Long postId) {
         return Optional.ofNullable(postService.getPost(postId))
                 .map(postModelToDtoConverter::convert)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -93,7 +91,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}")
-    public PostDto updatePost(final @PathVariable(Constants.Controller.POST_ID) BigInteger postId,
+    public PostDto updatePost(final @PathVariable(Constants.Controller.POST_ID) Long postId,
                               final @RequestBody CreatePostRequest request) {
         if (Objects.isNull(request) || RequestValidator.isInvalid(request)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request data");
@@ -113,7 +111,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> deletePost(final @PathVariable(Constants.Controller.POST_ID) BigInteger postId) {
+    public ResponseEntity<Void> deletePost(final @PathVariable(Constants.Controller.POST_ID) Long postId) {
         try {
             postService.deletePost(postId);
 
@@ -127,7 +125,7 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/likes")
-    public ResponseEntity<BigInteger> likePost(final @PathVariable(Constants.Controller.POST_ID) BigInteger postId) {
+    public ResponseEntity<Long> likePost(final @PathVariable(Constants.Controller.POST_ID) Long postId) {
         if (!postService.postExists(postId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
