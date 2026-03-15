@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Repository
@@ -32,12 +33,14 @@ public class PostRepositoryImpl implements PostRepository {
                        p.title,
                        p.content,
                        t.name AS tag_name,
-                       (SELECT COALESCE(l.lcount, 0) FROM blog.likes l WHERE l.post_id = p.id) AS like_count,
+                       p.created_at,
+                       p.updated_at,
+                       COALESCE((SELECT l.lcount FROM blog.likes l WHERE l.post_id = p.id), 0) AS like_count,
                        (SELECT COUNT(*) FROM blog.comments c WHERE c.post_id = p.id) AS comment_count
                 FROM blog.posts p
                 LEFT JOIN blog.post_tags pt ON p.id = pt.post_id
                 LEFT JOIN blog.tags t ON pt.tag_id = t.id
-                WHERE post_id = ?
+                WHERE p.id = ?
                 """;
 
         try {
@@ -68,7 +71,7 @@ public class PostRepositoryImpl implements PostRepository {
     public PostModel update(Long id, PostModel updatedEntity) {
         final var query = """
                 UPDATE blog.posts
-                SET title = ?, content = ?
+                SET title = ?, content = ?, updated_at = ?
                 WHERE id = ?
                 RETURNING *
                 """;
@@ -77,6 +80,7 @@ public class PostRepositoryImpl implements PostRepository {
                 query, (rs, rowNum) -> mapToPostModel(rs),
                 updatedEntity.getTitle(),
                 updatedEntity.getContent(),
+                LocalDateTime.now(),
                 id
         );
     }
@@ -91,13 +95,16 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public List<Long> getOrInsertTags(List<String> tagNames) {
+        final var params = new MapSqlParameterSource();
+        params.addValue("tagNames", tagNames.toArray(new String[0]));
+
         final var query = """
                 WITH input_tags AS (
-                    SELECT unnest(?::text[]) AS name
+                    SELECT unnest(:tagNames::varchar[]) AS name
                 ),
                 inserted_tags AS (
                     INSERT INTO blog.tags (name)
-                    SELECT name FROM blog.input_tags
+                    SELECT name FROM input_tags
                     ON CONFLICT (name) DO NOTHING
                     RETURNING id, name
                 )
@@ -108,10 +115,9 @@ public class PostRepositoryImpl implements PostRepository {
                 WHERE NOT EXISTS (SELECT 1 FROM inserted_tags WHERE name = it.name)
                 """;
 
-        return jdbcTemplate.query(
-                query,
-                (rs, rowNum) -> rs.getLong(AbstractModel.Fields.id),
-                tagNames.toArray()
+        return namedParameterJdbcTemplate.query(
+                query, params,
+                (rs, rowNum) -> rs.getLong(AbstractModel.Fields.id)
         );
     }
 
@@ -216,25 +222,28 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Long incrementLikes(Long postId) {
+        final var query = """
+                INSERT INTO blog.likes (post_id, lcount)
+                VALUES (?, 1)
+                ON CONFLICT (post_id)
+                DO UPDATE SET lcount = blog.likes.lcount + 1
+                RETURNING lcount
+                """;
+
         return jdbcTemplate.queryForObject(
-                "UPDATE blog.posts SET lcount = lcount + 1 WHERE id = ? RETURNING lcount",
+                query,
                 Long.class,
                 postId
         );
     }
 
     protected static PostModel mapToPostModelWithTags(final ResultSet rs) throws SQLException {
-        PostModel postModel = null;
+        final var postModel = mapToPostModelWithTransientFields(rs);
 
-        while (rs.next()) {
-            if (postModel == null) {
-                postModel = mapToPostModelWithTransientFields(rs);
-            }
+        final var tagName = rs.getString("tag_name");
 
-            final var tagName = rs.getString("tag_name");
-            if (tagName != null) {
-                postModel.getTags().add(tagName);
-            }
+        if (tagName != null) {
+            postModel.getTags().add(tagName);
         }
 
         return postModel;
@@ -271,8 +280,8 @@ public class PostRepositoryImpl implements PostRepository {
     protected static PostModel mapToPostModelWithTransientFields(final ResultSet resultSet) throws SQLException {
         return PostModel.builder()
                 .id(resultSet.getLong("post_id"))
-                .title(resultSet.getString("p.title"))
-                .content(resultSet.getString("p.content"))
+                .title(resultSet.getString(PostModel.Fields.title))
+                .content(resultSet.getString(PostModel.Fields.content))
                 .tags(new ArrayList<>())
                 .likeCount(resultSet.getLong("like_count"))
                 .commentCount(resultSet.getLong("comment_count"))
@@ -284,7 +293,7 @@ public class PostRepositoryImpl implements PostRepository {
     protected static PostModel mapToPreviewPostModel(final ResultSet resultSet) throws SQLException {
         return PostModel.builder()
                 .id(resultSet.getLong("post_id"))
-                .title(resultSet.getString("title"))
+                .title(resultSet.getString(PostModel.Fields.title))
                 .content(resultSet.getString("preview"))
                 .tags(new ArrayList<>())
                 .likeCount(resultSet.getLong("like_count"))
