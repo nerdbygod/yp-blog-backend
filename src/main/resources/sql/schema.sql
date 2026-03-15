@@ -1,0 +1,43 @@
+-- Create schema
+CREATE SCHEMA IF NOT EXISTS blog;
+
+-- Create tables
+CREATE TABLE IF NOT EXISTS blog.posts(
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(256) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS blog.tags(
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(64) UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS blog.post_tags(
+    post_id BIGINT REFERENCES blog.posts(id) ON DELETE CASCADE,
+    tag_id BIGINT REFERENCES blog.tags(id) ON DELETE CASCADE,
+    PRIMARY KEY (post_id, tag_id)
+);
+
+CREATE TABLE IF NOT EXISTS blog.likes(
+    post_id BIGINT REFERENCES blog.posts(id) ON DELETE CASCADE,
+    lcount BIGINT
+);
+
+CREATE TABLE IF NOT EXISTS blog.comments(
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT REFERENCES blog.posts(id) ON DELETE CASCADE,
+    content VARCHAR(1024) NOT NULL,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS blog.images(
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT UNIQUE REFERENCES blog.posts(id) ON DELETE CASCADE,
+    file_name VARCHAR(64) NOT NULL,
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
