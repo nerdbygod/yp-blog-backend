@@ -12,6 +12,7 @@ public class PostModelToDtoConverter implements Converter<PostModel, PostDto> {
     @Override
     public PostDto convert(final @NonNull PostModel source) {
         return PostDto.builder()
+                .id(source.getId())
                 .title(source.getTitle())
                 .text(source.getContent())
                 .tags(source.getTags())
