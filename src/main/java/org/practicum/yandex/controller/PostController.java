@@ -1,6 +1,7 @@
 package org.practicum.yandex.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.practicum.yandex.Constants;
@@ -18,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(Constants.Controller.API_POSTS)
@@ -106,6 +108,8 @@ public class PostController {
 
             return postModelToDtoConverter.convert(updatedPostModel);
         } catch (Exception e) {
+            log.warn("Unhandled exception occurred while updating post [{}]", postId, e);
+
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
