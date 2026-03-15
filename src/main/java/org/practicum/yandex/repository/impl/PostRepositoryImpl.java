@@ -133,7 +133,7 @@ public class PostRepositoryImpl implements PostRepository {
         final var params = new MapSqlParameterSource();
 
         params.addValue("limit", size);
-        params.addValue("offset", page * size);
+        params.addValue("offset", (page - 1) * size);
 
         final var whereClause = new StringBuilder("WHERE 1=1 ");
 
