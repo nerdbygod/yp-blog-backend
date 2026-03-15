@@ -12,5 +12,5 @@ public class GetPostListResponse {
     private List<PostDto> posts;
     boolean hasPrev;
     boolean hasNext;
-    long lastPage;
+    Long lastPage;
 }
