@@ -32,11 +32,11 @@ public class PostRepositoryImpl implements PostRepository {
                        p.title,
                        p.content,
                        t.name AS tag_name,
-                       (SELECT COALESCE(l.lcount, 0) FROM likes l WHERE l.post_id = p.id) AS like_count,
-                       (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
-                FROM posts p
-                LEFT JOIN post_tags pt ON p.id = pt.post_id
-                LEFT JOIN tags t ON pt.tag_id = t.id
+                       (SELECT COALESCE(l.lcount, 0) FROM blog.likes l WHERE l.post_id = p.id) AS like_count,
+                       (SELECT COUNT(*) FROM blog.comments c WHERE c.post_id = p.id) AS comment_count
+                FROM blog.posts p
+                LEFT JOIN blog.post_tags pt ON p.id = pt.post_id
+                LEFT JOIN blog.tags t ON pt.tag_id = t.id
                 WHERE post_id = ?
                 """;
 
@@ -52,7 +52,7 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     public PostModel save(PostModel entity) {
         return jdbcTemplate.queryForObject(
-                "INSERT INTO posts(title, content) VALUES (?, ?) RETURNING *",
+                "INSERT INTO blog.posts(title, content) VALUES (?, ?) RETURNING *",
                 (rs, rowNum) -> mapToPostModel(rs),
                 entity.getTitle(),
                 entity.getContent()
@@ -61,13 +61,13 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public int deleteById(Long id) {
-        return jdbcTemplate.update("DELETE FROM posts WHERE id = ?", id);
+        return jdbcTemplate.update("DELETE FROM blog.posts WHERE id = ?", id);
     }
 
     @Override
     public PostModel update(Long id, PostModel updatedEntity) {
         final var query = """
-                UPDATE posts
+                UPDATE blog.posts
                 SET title = ?, content = ?
                 WHERE id = ?
                 RETURNING *
@@ -84,7 +84,7 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     public boolean existsById(Long id) {
         return jdbcTemplate.queryForObject(
-                "SELECT EXISTS(SELECT 1 FROM posts WHERE id = ?)",
+                "SELECT EXISTS(SELECT 1 FROM blog.posts WHERE id = ?)",
                 Boolean.class, id
         );
     }
@@ -96,14 +96,14 @@ public class PostRepositoryImpl implements PostRepository {
                     SELECT unnest(?::text[]) AS name
                 ),
                 inserted_tags AS (
-                    INSERT INTO tags (name)
-                    SELECT name FROM input_tags
+                    INSERT INTO blog.tags (name)
+                    SELECT name FROM blog.input_tags
                     ON CONFLICT (name) DO NOTHING
                     RETURNING id, name
                 )
                 SELECT id FROM inserted_tags
                 UNION ALL
-                SELECT t.id FROM tags t
+                SELECT t.id FROM blog.tags t
                 JOIN input_tags it ON t.name = it.name
                 WHERE NOT EXISTS (SELECT 1 FROM inserted_tags WHERE name = it.name)
                 """;
@@ -117,7 +117,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public void saveTags(final Long postId, final List<Long> tagIds) {
-        final var query = "INSERT INTO post_tags (post_id, tag_id) VALUES (?, ?)";
+        final var query = "INSERT INTO blog.post_tags (post_id, tag_id) VALUES (?, ?)";
 
         jdbcTemplate.batchUpdate(query, getPostTagsBatchPreparedStatementSetter(postId, tagIds));
     }
@@ -129,7 +129,7 @@ public class PostRepositoryImpl implements PostRepository {
         params.addValue("limit", size);
         params.addValue("offset", page * size);
 
-        final var whereClause = new StringBuilder(" WHERE 1=1 ");
+        final var whereClause = new StringBuilder("WHERE 1=1 ");
 
         if (StringUtils.isNotBlank(query)) {
             whereClause.append("AND p.title ILIKE :searchQuery ");
@@ -148,9 +148,9 @@ public class PostRepositoryImpl implements PostRepository {
                         WITH filtered_posts AS (
                             SELECT p.id, p.title, p.content, p.updated_at, p.created_at,
                             COUNT(*) OVER() AS total_matches
-                            FROM posts p
-                            JOIN post_tags pt ON p.id = pt.post_id
-                            JOIN tags t ON pt.tag_id = t.id
+                            FROM blog.posts p
+                            JOIN blog.post_tags pt ON p.id = pt.post_id
+                            JOIN blog.tags t ON pt.tag_id = t.id
                             %s
                             GROUP by p.id
                             %s
@@ -163,15 +163,16 @@ public class PostRepositoryImpl implements PostRepository {
                                    WHEN LENGTH(fp.content) > 128 THEN LEFT(fp.content, 128) || '...'
                                    ELSE fp.content
                                END AS preview,
+                               fp.total_matches,
                                fp.updated_at,
                                fp.created_at,
                                t.name as tag_name,
-                               (SELECT COALESCE(l.lcount, 0) FROM likes l WHERE l.post_id = p.id) AS like_count,
-                               (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count
+                               (SELECT COALESCE(l.lcount, 0) FROM blog.likes l WHERE l.post_id = fp.id) AS like_count,
+                               (SELECT COUNT(*) FROM blog.comments c WHERE c.post_id = fp.id) AS comment_count
                         FROM filtered_posts fp
-                        LEFT JOIN post_tags pt ON fp.id = pt.post_id
-                        LEFT JOIN tags t ON pt.tag_id = t.id;
-                        ORDER BY fp.updated_at DECS
+                        LEFT JOIN blog.post_tags pt ON fp.id = pt.post_id
+                        LEFT JOIN blog.tags t ON pt.tag_id = t.id
+                        ORDER BY fp.updated_at DESC;
                         """,
                 whereClause, havingClause
         );
@@ -179,8 +180,13 @@ public class PostRepositoryImpl implements PostRepository {
         return namedParameterJdbcTemplate.query(
                 sql, params, rs -> {
                     final var results = new LinkedHashMap<Long, PostModel>();
+                    long totalMatches = 0L;
 
                     while (rs.next()) {
+                        if (results.isEmpty()) {
+                            totalMatches = rs.getLong("total_matches");
+                        }
+
                         final var postId = rs.getLong("post_id");
                         final var postModel = results.computeIfAbsent(postId, id -> {
                             try {
@@ -198,20 +204,20 @@ public class PostRepositoryImpl implements PostRepository {
 
                     return Page.<PostModel>builder()
                             .data(new ArrayList<>(results.values()))
-                            .count(rs.getLong("total_matches"))
+                            .count(totalMatches)
                             .build();
                 });
     }
 
     @Override
     public void removePostTags(Long postId) {
-        jdbcTemplate.update("DELETE FROM post_tags WHERE post_id = ?", postId);
+        jdbcTemplate.update("DELETE FROM blog.post_tags WHERE post_id = ?", postId);
     }
 
     @Override
     public Long incrementLikes(Long postId) {
         return jdbcTemplate.queryForObject(
-                "UPDATE posts SET lcount = lcount + 1 WHERE id = ? RETURNING lcount",
+                "UPDATE blog.posts SET lcount = lcount + 1 WHERE id = ? RETURNING lcount",
                 Long.class,
                 postId
         );
