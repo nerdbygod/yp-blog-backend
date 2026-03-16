@@ -33,12 +33,8 @@ public class PostController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request data");
         }
 
-        try {
-            final var postModel = postService.createPost(request);
-            return postModelToDtoConverter.convert(postModel);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
+        final var postModel = postService.createPost(request);
+        return postModelToDtoConverter.convert(postModel);
     }
 
     @PostMapping("/{postId}")
@@ -103,15 +99,9 @@ public class PostController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
-        try {
-            final var updatedPostModel = postService.updatePost(postId, request);
+        final var updatedPostModel = postService.updatePost(postId, request);
 
-            return postModelToDtoConverter.convert(updatedPostModel);
-        } catch (Exception e) {
-            log.warn("Unhandled exception occurred while updating post [{}]", postId, e);
-
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-        }
+        return postModelToDtoConverter.convert(updatedPostModel);
     }
 
     @DeleteMapping("/{postId}")
