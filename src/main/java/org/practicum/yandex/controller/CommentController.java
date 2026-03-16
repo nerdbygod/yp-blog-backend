@@ -84,17 +84,19 @@ public class CommentController {
         if (postService.postExists(postId)) {
             try {
                 commentService.deleteComment(commentId);
+
+                return ResponseEntity.ok().build();
             } catch (DataNotFoundException e) {
                 throw new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         String.format("Comment with id %d not found", commentId)
                 );
             }
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    String.format("Post with id %d not found", postId)
+            );
         }
-
-        throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                String.format("Post with id %d not found", postId)
-        );
     }
 }
