@@ -29,7 +29,7 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    providedRuntime 'jakarta.servlet:jakarta.servlet-api:4.0.2'
+    providedRuntime 'jakarta.servlet:jakarta.servlet-api:6.1.0'
 
     testImplementation 'org.springframework:spring-test'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
