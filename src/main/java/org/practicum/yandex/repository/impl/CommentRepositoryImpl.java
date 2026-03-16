@@ -44,7 +44,7 @@ public class CommentRepositoryImpl implements CommentRepository {
     @Override
     public CommentModel save(CommentModel entity) {
         return jdbcTemplate.queryForObject(
-                "INSERT INTO blog.comments (post_id, content) VALUES ?, ? RETURNING *",
+                "INSERT INTO blog.comments (post_id, content) VALUES (?, ?) RETURNING *",
                 (rs, rowNum) -> mapToCommentModel(rs),
                 entity.getPostId(), entity.getContent()
         );
@@ -84,7 +84,7 @@ public class CommentRepositoryImpl implements CommentRepository {
         return CommentModel.builder()
                 .id(resultSet.getLong(AbstractModel.Fields.id))
                 .content(resultSet.getString(CommentModel.Fields.content))
-                .postId(resultSet.getLong(CommentModel.Fields.postId))
+                .postId(resultSet.getLong("post_id"))
                 .createdAt(resultSet.getTimestamp("created_at").toLocalDateTime())
                 .updatedAt(resultSet.getTimestamp("updated_at").toLocalDateTime())
                 .build();
