@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +23,7 @@ public class CommentRepositoryImpl implements CommentRepository {
     public Optional<CommentModel> findById(Long id) {
         try {
             final var commentModel = jdbcTemplate.queryForObject(
-                    "SELECT * FROM comments WHERE id = ?",
+                    "SELECT * FROM blog.comments WHERE id = ?",
                     (rs, row) -> mapToCommentModel(rs), id
             );
 
@@ -34,16 +35,16 @@ public class CommentRepositoryImpl implements CommentRepository {
 
     @Override
     public List<CommentModel> findAllByPostId(Long postId) {
-            return jdbcTemplate.query(
-                    "SELECT * FROM comments WHERE post_id = ?",
-                    (rs, row) ->mapToCommentModel(rs), postId
-            );
+        return jdbcTemplate.query(
+                "SELECT * FROM blog.comments WHERE post_id = ?",
+                (rs, row) -> mapToCommentModel(rs), postId
+        );
     }
 
     @Override
     public CommentModel save(CommentModel entity) {
         return jdbcTemplate.queryForObject(
-                "INSERT INTO comments (post_id, content) VALUES ?, ? RETURNING *",
+                "INSERT INTO blog.comments (post_id, content) VALUES ?, ? RETURNING *",
                 (rs, rowNum) -> mapToCommentModel(rs),
                 entity.getPostId(), entity.getContent()
         );
@@ -51,14 +52,14 @@ public class CommentRepositoryImpl implements CommentRepository {
 
     @Override
     public int deleteById(Long id) {
-        return jdbcTemplate.update("DELETE FROM comments WHERE id = ?", id);
+        return jdbcTemplate.update("DELETE FROM blog.comments WHERE id = ?", id);
     }
 
     @Override
     public CommentModel update(Long id, CommentModel updatedEntity) {
         final var query = """
-                UPDATE comments
-                SET content = ?
+                UPDATE blog.comments
+                SET content = ?, updated_at = ?
                 WHERE id = ?
                 RETURNING *
                 """;
@@ -66,6 +67,7 @@ public class CommentRepositoryImpl implements CommentRepository {
         return jdbcTemplate.queryForObject(
                 query, (rs, rowNum) -> mapToCommentModel(rs),
                 updatedEntity.getContent(),
+                LocalDateTime.now(),
                 id
         );
     }
@@ -73,7 +75,7 @@ public class CommentRepositoryImpl implements CommentRepository {
     @Override
     public boolean existsById(Long id) {
         return jdbcTemplate.queryForObject(
-                "SELECT EXISTS(SELECT 1 FROM comments WHERE id = ?)",
+                "SELECT EXISTS(SELECT 1 FROM blog.comments WHERE id = ?)",
                 Boolean.class, id
         );
     }
