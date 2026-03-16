@@ -6,4 +6,5 @@ import java.util.Optional;
 
 public interface ImageRepository extends SqlRepository<Long, ImageModel> {
     Optional<ImageModel> findByPostId(final Long postId);
+    boolean existsByPostId(final Long postId);
 }

@@ -126,7 +126,7 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public boolean imageExistsByPostId(Long postId) {
-        return false;
+        return imageRepository.existsByPostId(postId);
     }
 
     protected void tryDeleteImage(final String fileName) {

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
@@ -21,7 +22,7 @@ public class ImageRepositoryImpl implements ImageRepository {
     public Optional<ImageModel> findById(Long id) {
         try {
             final var imageModel = jdbcTemplate.queryForObject(
-                    "SELECT * FROM images WHERE id = ?",
+                    "SELECT * FROM blog.images WHERE id = ?",
                     (rs, rowNum) -> mapToImageModel(rs),
                     id
             );
@@ -35,7 +36,7 @@ public class ImageRepositoryImpl implements ImageRepository {
     @Override
     public ImageModel save(ImageModel entity) {
         return jdbcTemplate.queryForObject(
-                "INSERT INTO images(post_id, file_name) VALUES (?, ?) RETURNING *",
+                "INSERT INTO blog.images(post_id, file_name) VALUES (?, ?) RETURNING *",
                 (rs, rowNum) -> mapToImageModel(rs),
                 entity.getPostId(),
                 entity.getFileName()
@@ -44,14 +45,14 @@ public class ImageRepositoryImpl implements ImageRepository {
 
     @Override
     public int deleteById(Long id) {
-        return jdbcTemplate.update("DELETE FROM images WHERE id = ?", id);
+        return jdbcTemplate.update("DELETE FROM blog.images WHERE id = ?", id);
     }
 
     @Override
     public ImageModel update(Long id, ImageModel updatedEntity) {
         final var query = """
-                UPDATE images
-                SET file_name = ?
+                UPDATE blog.images
+                SET file_name = ?, updated_at = ?
                 WHERE id = ?
                 RETURNING *
                 """;
@@ -59,6 +60,7 @@ public class ImageRepositoryImpl implements ImageRepository {
         return jdbcTemplate.queryForObject(
                 query, (rs, rowNum) -> mapToImageModel(rs),
                 updatedEntity.getFileName(),
+                LocalDateTime.now(),
                 id
         );
     }
@@ -66,7 +68,7 @@ public class ImageRepositoryImpl implements ImageRepository {
     @Override
     public boolean existsById(Long id) {
         return jdbcTemplate.queryForObject(
-                "SELECT EXISTS(SELECT 1 FROM images WHERE id = ?)",
+                "SELECT EXISTS(SELECT 1 FROM blog.images WHERE id = ?)",
                 Boolean.class, id
         );
     }
@@ -75,7 +77,7 @@ public class ImageRepositoryImpl implements ImageRepository {
     public Optional<ImageModel> findByPostId(Long postId) {
         try {
             final var imageModel = jdbcTemplate.queryForObject(
-                    "SELECT * FROM images WHERE post_id = ?",
+                    "SELECT * FROM blog.images WHERE post_id = ?",
                     (rs, rowNum) -> mapToImageModel(rs),
                     postId
             );
@@ -84,6 +86,14 @@ public class ImageRepositoryImpl implements ImageRepository {
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public boolean existsByPostId(Long postId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT EXISTS(SELECT 1 FROM blog.images WHERE post_id = ?)",
+                Boolean.class, postId
+        );
     }
 
     protected static ImageModel mapToImageModel(ResultSet resultSet) throws SQLException {
