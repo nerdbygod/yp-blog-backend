@@ -155,8 +155,8 @@ public class PostRepositoryImpl implements PostRepository {
                             SELECT p.id, p.title, p.content, p.updated_at, p.created_at,
                             COUNT(*) OVER() AS total_matches
                             FROM blog.posts p
-                            JOIN blog.post_tags pt ON p.id = pt.post_id
-                            JOIN blog.tags t ON pt.tag_id = t.id
+                            LEFT JOIN blog.post_tags pt ON p.id = pt.post_id
+                            LEFT JOIN blog.tags t ON pt.tag_id = t.id
                             %s
                             GROUP by p.id
                             %s
