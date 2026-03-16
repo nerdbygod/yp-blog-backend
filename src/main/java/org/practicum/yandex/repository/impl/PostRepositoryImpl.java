@@ -44,9 +44,9 @@ public class PostRepositoryImpl implements PostRepository {
                 """;
 
         try {
-            final var postModel = jdbcTemplate.queryForObject(query, (rs, row) -> mapToPostModelWithTags(rs), id);
+            final var postModel = jdbcTemplate.query(query, PostRepositoryImpl::mapToPostModelWithTags, id);
 
-            return Optional.of(postModel);
+            return Optional.ofNullable(postModel);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
@@ -238,12 +238,17 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     protected static PostModel mapToPostModelWithTags(final ResultSet rs) throws SQLException {
-        final var postModel = mapToPostModelWithTransientFields(rs);
+        PostModel postModel = null;
 
-        final var tagName = rs.getString("tag_name");
+        while (rs.next()) {
+            if (postModel == null) {
+                postModel = mapToPostModelWithTransientFields(rs);
+            }
 
-        if (tagName != null) {
-            postModel.getTags().add(tagName);
+            final var tagName = rs.getString("tag_name");
+            if (tagName != null) {
+                postModel.getTags().add(tagName);
+            }
         }
 
         return postModel;
