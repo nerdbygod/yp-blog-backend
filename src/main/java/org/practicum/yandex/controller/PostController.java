@@ -37,7 +37,7 @@ public class PostController {
         return postModelToDtoConverter.convert(postModel);
     }
 
-    @PostMapping("/{postId}")
+    @GetMapping("/{postId}")
     public PostDto getPostById(final @PathVariable(Constants.Controller.POST_ID) Long postId) {
         return Optional.ofNullable(postService.getPost(postId))
                 .map(postModelToDtoConverter::convert)

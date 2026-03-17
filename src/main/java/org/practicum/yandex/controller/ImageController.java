@@ -26,7 +26,7 @@ public class ImageController {
 
     @PutMapping
     public ResponseEntity<Void> uploadImage(final @PathVariable(Constants.Controller.POST_ID) Long postId,
-                                            final @RequestParam("filename") MultipartFile file) {
+                                            final @RequestParam("image") MultipartFile file) {
         if (!postService.postExists(postId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
