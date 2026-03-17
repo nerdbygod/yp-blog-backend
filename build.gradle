@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'org.practicum.yandex'
-version = '0.0.1'
+version = ''
 
 repositories {
     mavenCentral()
