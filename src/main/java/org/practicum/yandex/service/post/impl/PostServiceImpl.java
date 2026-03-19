@@ -47,7 +47,7 @@ public class PostServiceImpl implements PostService {
     public PostModel updatePost(Long postId, CreatePostRequest request) {
         final var postModel = PostModel.builder()
                 .title(request.getTitle())
-                .content(request.getTitle())
+                .content(request.getText())
                 .build();
 
         postRepository.update(postId, postModel);
