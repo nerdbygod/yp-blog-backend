@@ -26,14 +26,20 @@ dependencies {
     implementation 'org.apache.tika:tika-core:3.2.3'
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
     implementation 'ch.qos.logback:logback-classic:1.5.32'
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.1.0'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    providedRuntime 'jakarta.servlet:jakarta.servlet-api:6.1.0'
 
+    implementation platform('org.testcontainers:testcontainers-bom:2.0.4')
+    testImplementation 'org.testcontainers:testcontainers-postgresql'
     testImplementation 'org.springframework:spring-test'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.assertj:assertj-core:3.27.7'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
 }
 
 java {
