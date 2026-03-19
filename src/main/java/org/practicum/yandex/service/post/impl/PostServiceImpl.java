@@ -14,10 +14,7 @@ import org.practicum.yandex.service.post.dto.PostDataWrapper;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +54,7 @@ public class PostServiceImpl implements PostService {
         postRepository.removePostTags(postId);
 
         if (CollectionUtils.isNotEmpty(request.getTags())) {
-            final var tagIds = postRepository.getOrInsertTags(request.getTags());
+            final var tagIds = postRepository.getOrInsertTags(new ArrayList<>(request.getTags()));
             postRepository.saveTags(postId, tagIds);
         }
 
@@ -121,7 +118,7 @@ public class PostServiceImpl implements PostService {
         return Optional.ofNullable(request)
                 .map(CreatePostRequest::getTags)
                 .filter(CollectionUtils::isNotEmpty)
-                .orElse(Collections.emptyList())
+                .orElse(Collections.emptySet())
                 .stream()
                 .filter(StringUtils::isNotBlank)
                 .map(StringUtils::normalizeSpace)

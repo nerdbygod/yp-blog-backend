@@ -1,16 +1,18 @@
 package org.practicum.yandex.controller.dto.request;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Set;
 
-@Getter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreatePostRequest {
     private String title;
     private String text;
-    private List<String> tags;
+    private Set<String> tags;
 }

@@ -144,7 +144,7 @@ public class PostRepositoryImpl implements PostRepository {
 
         String havingClause = "";
         if (CollectionUtils.isNotEmpty(tags)) {
-            whereClause.append("AND t.name IN (:tags) ");
+            whereClause.append("AND t.name IN (:tags) "); // TODO: add support for case-insensitive search by tags
             params.addValue("tags", tags);
             params.addValue("tagCount", tags.size());
             havingClause = "HAVING COUNT(DISTINCT t.name) = :tagCount";
