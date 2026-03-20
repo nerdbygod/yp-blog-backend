@@ -55,9 +55,16 @@ public class CommentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request data");
         }
 
-        final var savedComment = commentService.addComment(request);
+        if (postService.postExists(request.getPostId())) {
+            final var savedComment = commentService.addComment(request);
 
-        return commentModelToDtoConverter.convert(savedComment);
+            return commentModelToDtoConverter.convert(savedComment);
+        }
+
+        throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                String.format("Post with id %d not found", request.getPostId())
+        );
     }
 
     @PutMapping("/{postId}/comments/{commentId}")
