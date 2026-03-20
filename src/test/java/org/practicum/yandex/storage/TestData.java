@@ -1,6 +1,7 @@
 package org.practicum.yandex.storage;
 
 import lombok.experimental.UtilityClass;
+import org.practicum.yandex.controller.dto.request.AddCommentRequest;
 import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 
 import java.util.Set;
@@ -22,6 +23,20 @@ public class TestData {
                 .title(title)
                 .text(text)
                 .tags(tags)
+                .build();
+    }
+
+    public static AddCommentRequest getDefaultAddCommentRequest(Long postId) {
+        return AddCommentRequest.builder()
+                .postId(postId)
+                .text("Default comment text")
+                .build();
+    }
+
+    public static AddCommentRequest getAddCommentRequest(Long postId, String text) {
+        return AddCommentRequest.builder()
+                .postId(postId)
+                .text(text)
                 .build();
     }
 
