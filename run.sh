@@ -40,7 +40,7 @@ RETRY_COUNT=0
 until [ "$(docker inspect --format='{{json .State.Health.Status}}' yp-blog-db)" == "\"healthy\"" ]; do
 
     if [ "$RETRY_COUNT" -gt "$MAX_HEALTHCHECK_RETRIES" ]; then
-        docker-compose down
+        docker-compose down $VOLUME_FLAG
         echo "Max healthcheck retries exceeded"
         exit 1
     fi
