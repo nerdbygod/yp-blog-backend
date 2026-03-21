@@ -5,12 +5,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.practicum.yandex.BlogApplicationConfig;
 import org.practicum.yandex.Constants;
-import org.practicum.yandex.config.TestConfig;
 import org.practicum.yandex.config.TestDataSourceConfiguration;
 import org.practicum.yandex.controller.dto.PostDto;
 import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 import org.practicum.yandex.controller.dto.response.GetPostListResponse;
-import org.practicum.yandex.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -31,7 +29,6 @@ import java.util.HashMap;
 import java.util.Objects;
 
 @SpringJUnitConfig(classes = {
-        TestConfig.class,
         BlogApplicationConfig.class,
         TestDataSourceConfiguration.class
 })
