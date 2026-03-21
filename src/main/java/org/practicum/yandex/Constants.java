@@ -12,5 +12,6 @@ public class Constants {
     public static final class Controller {
         public static final String API_POSTS = "/api/posts";
         public static final String POST_ID = "postId";
+        public static final String IMAGE_PARAM = "image";
     }
 }
