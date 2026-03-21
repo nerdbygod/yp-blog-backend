@@ -3,6 +3,9 @@
 MAX_HEALTHCHECK_RETRIES=5
 readonly MAX_HEALTHCHECK_RETRIES
 
+RESET_DATABASE=true # Set true if you want to have a clean database when deploying the app
+readonly RESET_DATABASE
+
 echo "Deploy yp-blog-backend started..."
 
 echo "Step 1: Building war archive..."
@@ -13,13 +16,21 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "Step 2: Cleaning up previous deployment..."
-docker-compose down
+VOLUME_FLAG=""
+if [ "$RESET_DATABASE" = true ]; then
+    echo "Step 2: Cleaning up previous deployment (WIPING VOLUMES)..."
+    VOLUME_FLAG="-v"
+else
+    echo "Step 2: Cleaning up previous deployment (PRESERVING VOLUMES)..."
+fi
+
+docker-compose down $VOLUME_FLAG
 
 echo "Step 3: Building and starting containers..."
 docker-compose up --build -d
 if [ $? -ne 0 ]; then
-    echo "Docker compose failed"
+    echo "Docker compose failed, cleaning up containers..."
+    docker-compose down $VOLUME_FLAG
     exit 1
 fi
 
@@ -40,6 +51,9 @@ until [ "$(docker inspect --format='{{json .State.Health.Status}}' yp-blog-db)" 
     sleep 2
 
 done
+
+echo "Step 5: Removing intermediate build layers and dangling images..."
+docker image prune -f
 
 echo -e "Deployment Complete!"
 echo "----------------------------------------"
