@@ -40,7 +40,7 @@ public class ImageController {
 
             return ResponseEntity.ok().build();
         } catch (InvalidImageException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 

@@ -113,7 +113,7 @@ public class ImageServiceImpl implements ImageService {
 
                 return new ByteArrayResource(content);
             } else {
-                log.warn("No image was found for post {}; deleting image", postId);
+                log.warn("No image was found for post {}; deleting image record from the database", postId);
 
                 imageRepository.deleteById(imageModel.getId());
 
