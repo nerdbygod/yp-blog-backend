@@ -63,8 +63,8 @@ public class PostControllerTest extends BaseControllerTest {
 
         assertThat(createdPost).isInstanceOf(PostDto.class);
         assertThat(createdPost.getId()).isNotNull();
-        assertThat(createdPost.getCommentCount()).isZero();
-        assertThat(createdPost.getLikeCount()).isZero();
+        assertThat(createdPost.getCommentsCount()).isZero();
+        assertThat(createdPost.getLikesCount()).isZero();
         assertThat(createdPost.getTags()).containsExactlyInAnyOrderElementsOf(createPostRequest.getTags());
         assertThat(createdPost.getTitle()).isEqualTo(createPostRequest.getTitle());
         assertThat(createdPost.getText()).isEqualTo(createPostRequest.getText());
@@ -86,8 +86,8 @@ public class PostControllerTest extends BaseControllerTest {
 
         assertThat(foundPost).isInstanceOf(PostDto.class);
         assertThat(foundPost.getId()).isNotNull();
-        assertThat(foundPost.getCommentCount()).isEqualTo(0);
-        assertThat(foundPost.getLikeCount()).isEqualTo(0);
+        assertThat(foundPost.getCommentsCount()).isEqualTo(0);
+        assertThat(foundPost.getLikesCount()).isEqualTo(0);
         assertThat(foundPost.getTags()).isEqualTo(createdPost.getTags());
         assertThat(foundPost.getTitle()).isEqualTo(createdPost.getTitle());
         assertThat(foundPost.getText()).isEqualTo(createdPost.getText());
@@ -238,7 +238,7 @@ public class PostControllerTest extends BaseControllerTest {
     void testIncrementLikesIsSuccessful() throws Exception {
         final var createdPost = createPost(TestData.getDefaultCreatePostRequest());
 
-        assertThat(createdPost.getLikeCount()).isZero();
+        assertThat(createdPost.getLikesCount()).isZero();
 
         final var count = 10;
 
@@ -253,7 +253,7 @@ public class PostControllerTest extends BaseControllerTest {
 
         assertThat(foundPost).isNotNull();
         assertThat(foundPost).isInstanceOf(PostDto.class);
-        assertThat(foundPost.getLikeCount()).isEqualTo(count);
+        assertThat(foundPost.getLikesCount()).isEqualTo(count);
     }
 
     @Test
@@ -301,8 +301,8 @@ public class PostControllerTest extends BaseControllerTest {
         assertThat(updatedPost.getTitle()).isEqualTo(updatePostRequest.getTitle());
         assertThat(updatedPost.getText()).isEqualTo(updatePostRequest.getText());
         assertThat(updatedPost.getTags()).containsExactlyInAnyOrderElementsOf(updatePostRequest.getTags());
-        assertThat(updatedPost.getCommentCount()).isEqualTo(post.getCommentCount());
-        assertThat(updatedPost.getLikeCount()).isEqualTo(post.getLikeCount());
+        assertThat(updatedPost.getCommentsCount()).isEqualTo(post.getCommentsCount());
+        assertThat(updatedPost.getLikesCount()).isEqualTo(post.getLikesCount());
     }
 
     @Test

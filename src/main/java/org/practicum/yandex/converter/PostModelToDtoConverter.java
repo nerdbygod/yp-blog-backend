@@ -16,8 +16,8 @@ public class PostModelToDtoConverter implements Converter<PostModel, PostDto> {
                 .title(source.getTitle())
                 .text(source.getContent())
                 .tags(source.getTags())
-                .commentCount(source.getCommentCount())
-                .likeCount(source.getLikeCount())
+                .commentsCount(source.getCommentCount())
+                .likesCount(source.getLikeCount())
                 .build();
     }
 

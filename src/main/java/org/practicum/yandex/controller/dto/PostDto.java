@@ -18,8 +18,8 @@ public class PostDto {
     private List<String> tags;
 
     @Builder.Default
-    private long likeCount = 0L;
+    private long likesCount = 0L;
 
     @Builder.Default
-    private long commentCount = 0L;
+    private long commentsCount = 0L;
 }

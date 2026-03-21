@@ -113,11 +113,11 @@ public class CommentControllerTest extends BaseControllerTest {
 
         final var foundPost = posts.getPosts().getFirst();
 
-        assertThat(foundPost.getCommentCount()).isEqualTo(commentCount);
+        assertThat(foundPost.getCommentsCount()).isEqualTo(commentCount);
 
         final var foundPostById = getExistingPostById(post.getId());
 
-        assertThat(foundPostById.getCommentCount()).isEqualTo(commentCount);
+        assertThat(foundPostById.getCommentsCount()).isEqualTo(commentCount);
     }
 
     @Test
@@ -273,11 +273,11 @@ public class CommentControllerTest extends BaseControllerTest {
 
         final var foundPost = posts.getPosts().getFirst();
 
-        assertThat(foundPost.getCommentCount()).isEqualTo(commentCount - commentsToDeleteCount);
+        assertThat(foundPost.getCommentsCount()).isEqualTo(commentCount - commentsToDeleteCount);
 
         final var foundPostById = getExistingPostById(post.getId());
 
-        assertThat(foundPostById.getCommentCount()).isEqualTo(commentCount - commentsToDeleteCount);
+        assertThat(foundPostById.getCommentsCount()).isEqualTo(commentCount - commentsToDeleteCount);
     }
 
     @Test
