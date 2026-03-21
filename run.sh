@@ -3,7 +3,7 @@
 MAX_HEALTHCHECK_RETRIES=5
 readonly MAX_HEALTHCHECK_RETRIES
 
-RESET_DATABASE=true # Set true if you want to have a clean database when deploying the app
+RESET_DATABASE=false # Set true if you want to have a clean database when deploying the app
 readonly RESET_DATABASE
 
 echo "Deploy yp-blog-backend started..."
