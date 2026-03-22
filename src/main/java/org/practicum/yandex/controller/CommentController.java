@@ -14,8 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,7 +28,21 @@ public class CommentController {
     private final CommentModelToDtoConverter commentModelToDtoConverter;
 
     @GetMapping("/{postId}/comments")
-    public List<CommentDto> getPostComments(final @PathVariable("postId") Long postId) {
+    public List<CommentDto> getPostComments(final @PathVariable("postId") String postIdString) {
+        if (Constants.IGNORABLE_POST_ID_VALUES.contains(postIdString)) {
+            return Collections.emptyList();
+        }
+
+        final var postId = Optional.of(postIdString)
+                .map(p -> {
+                    try {
+                        return Long.valueOf(p);
+                    } catch (NumberFormatException nfe) {
+                        return null;
+                    }
+                })
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to parse postId"));
+
         if (postService.postExists(postId)) {
             return commentService.getAllComments(postId)
                     .stream()
