@@ -33,7 +33,7 @@ In order to run tests, make sure Docker is running on your machine.
 This is required for Testcontainers to run a full Postgres database supporting tests. 
 Run this command from the root directory:
 ```shell
-gradle test
+./gradlew test
 ```
 
 ## Additional configuration
