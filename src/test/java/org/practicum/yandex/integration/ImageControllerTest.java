@@ -1,35 +1,33 @@
 package org.practicum.yandex.integration;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.io.CleanupMode;
+import org.junit.jupiter.api.io.TempDir;
 import org.practicum.yandex.Constants;
 import org.practicum.yandex.repository.ImageRepository;
 import org.practicum.yandex.service.image.ImageService;
 import org.practicum.yandex.service.image.impl.ImageServiceImpl;
 import org.practicum.yandex.storage.TestData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.util.ReflectionUtils;
 
-import java.io.IOException;
-import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ImageControllerTest extends BaseControllerTest {
-    @Value("${image.uploadDir}")
-    private String uploadDir;
+    @TempDir(cleanup = CleanupMode.ALWAYS)
+    private static Path TEMP_UPLOAD_DIR = Paths.get("temp/uploads/image/");
 
     @Autowired
     private ImageRepository imageRepository;
@@ -37,9 +35,9 @@ public class ImageControllerTest extends BaseControllerTest {
     @Autowired
     private ImageService imageService;
 
-    @AfterAll
-    void tearDown() {
-        cleanupUploadDir();
+    @DynamicPropertySource
+    static void overrideUploadDirProperty(DynamicPropertyRegistry registry) {
+        registry.add("image.uploadDir", TEMP_UPLOAD_DIR::toString);
     }
 
     @Test
@@ -182,16 +180,6 @@ public class ImageControllerTest extends BaseControllerTest {
                 .getContentAsByteArray();
     }
 
-    private String imagePath(long postId) {
-        return String.format(Const.TEMPLATE, postByIdPath(postId), Constants.Controller.IMAGE_PARAM);
-    }
-
-    private void assertFileIsDeleted(String fileName) {
-        final var filePath = Paths.get(uploadDir).resolve(fileName).normalize();
-
-        assertThat(filePath).doesNotExist();
-    }
-
     private void deleteFile(String fileName) {
         final var tryDeleteImageMethod = ReflectionUtils.findMethod(
                 ImageServiceImpl.class, "tryDeleteImage", String.class
@@ -201,15 +189,13 @@ public class ImageControllerTest extends BaseControllerTest {
         ReflectionUtils.invokeMethod(tryDeleteImageMethod, imageService, fileName);
     }
 
-    private void cleanupUploadDir() {
-        try {
-            final var uploadDirPath = Paths.get(uploadDir);
+    private String imagePath(long postId) {
+        return String.format(Const.TEMPLATE, postByIdPath(postId), Constants.Controller.IMAGE_PARAM);
+    }
 
-            if (Files.exists(uploadDirPath)) {
-                FileUtils.deleteDirectory(uploadDirPath.toFile());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private static void assertFileIsDeleted(String fileName) {
+        final var filePath = TEMP_UPLOAD_DIR.resolve(fileName).normalize();
+
+        assertThat(filePath).doesNotExist();
     }
 }
