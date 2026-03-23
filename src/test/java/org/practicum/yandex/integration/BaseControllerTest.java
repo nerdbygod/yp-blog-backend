@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.practicum.yandex.BlogApplicationConfig;
 import org.practicum.yandex.Constants;
-import org.practicum.yandex.config.TestDataSourceConfiguration;
 import org.practicum.yandex.controller.dto.PostDto;
 import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 import org.practicum.yandex.controller.dto.response.GetPostListResponse;
@@ -27,11 +26,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import java.util.HashMap;
 import java.util.Objects;
 
-@SpringJUnitConfig(classes = {
-        BlogApplicationConfig.class,
-        TestDataSourceConfiguration.class
-})
 @WebAppConfiguration
+@SpringJUnitConfig(classes = BlogApplicationConfig.class)
 public abstract class BaseControllerTest {
     protected static final ObjectMapper MAPPER = new ObjectMapper();
 
