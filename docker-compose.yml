@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: yp-blog-db
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: yp-blog
+      POSTGRES_PASSWORD: { YOUR_PASSWORD_HERE }
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  yp-blog:
+    container_name: yp-blog-backend-app
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: jdbc:postgresql://db:5432/yp-blog
+      DB_USER: yp-blog
+      DB_PASSWORD: { YOUR_PASSWORD_HERE }
+
+volumes:
+  pg-data:
