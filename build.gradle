@@ -27,6 +27,7 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers-postgresql'
     testImplementation 'org.assertj:assertj-core'
     testImplementation 'org.hamcrest:hamcrest'
+    testImplementation 'tools.jackson.core:jackson-databind'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testCompileOnly 'org.projectlombok:lombok'
 }
