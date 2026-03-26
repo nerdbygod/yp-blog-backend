@@ -21,10 +21,10 @@ To deploy the entire stack (database + the application),
 simply run the deployment script from the root directory:
 ```shell
 # Make the script executable (first time only)
-chmod +x run.sh
+chmod +x gradle-run.sh
 
 # Run the deployment
-./run.sh
+./gradle-run.sh
 ```
 The app will be available via http://localhost:8080/
 

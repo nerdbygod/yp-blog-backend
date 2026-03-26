@@ -8,7 +8,7 @@ readonly RESET_DATABASE
 
 echo "Deploy yp-blog-backend started..."
 
-echo "Step 1: Building executable JAR archive..."
+echo "Step 1: Building executable JAR archive using Gradle..."
 chmod +x gradlew
 ./gradlew clean bootJar
 if [ $? -ne 0 ]; then
