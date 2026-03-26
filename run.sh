@@ -8,9 +8,9 @@ readonly RESET_DATABASE
 
 echo "Deploy yp-blog-backend started..."
 
-echo "Step 1: Building war archive..."
+echo "Step 1: Building executable JAR archive..."
 chmod +x gradlew
-./gradlew clean war
+./gradlew clean bootJar
 if [ $? -ne 0 ]; then
     echo "Gradle build failed"
     exit 1
