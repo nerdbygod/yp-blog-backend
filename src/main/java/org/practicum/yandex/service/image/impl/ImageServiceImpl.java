@@ -1,6 +1,5 @@
 package org.practicum.yandex.service.image.impl;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.UUID;
 
@@ -34,13 +33,8 @@ public class ImageServiceImpl implements ImageService {
 
     private final ImageRepository imageRepository;
 
-    @Value("${image.uploadDir}")
-    private String uploadDir;
-
-    @PostConstruct
-    public void init() {
-        createUploadDirIfNeeded();
-    }
+    @Value("${spring.servlet.multipart.location}")
+    private Path uploadDir;
 
     @Override
     public void addImage(Long postId, MultipartFile file) throws InvalidImageException {
@@ -106,7 +100,7 @@ public class ImageServiceImpl implements ImageService {
                 );
 
         try {
-            final var filePath = Paths.get(uploadDir).resolve(imageModel.getFileName()).normalize();
+            final var filePath = uploadDir.resolve(imageModel.getFileName()).normalize();
 
             if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
                 final var content = Files.readAllBytes(filePath);
@@ -132,7 +126,7 @@ public class ImageServiceImpl implements ImageService {
     protected void tryDeleteImage(final String fileName) {
         try {
             if (StringUtils.isNotEmpty(fileName)) {
-                final var filePath = Paths.get(uploadDir).resolve(fileName).normalize();
+                final var filePath = uploadDir.resolve(fileName).normalize();
 
                 if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
                     Files.delete(filePath);
@@ -156,23 +150,11 @@ public class ImageServiceImpl implements ImageService {
             }
 
             final var fileName = getFileName(mediaType);
-            final var filePath = Paths.get(uploadDir).resolve(fileName);
+            final var filePath = uploadDir.resolve(fileName);
 
             file.transferTo(filePath);
 
             return fileName;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void createUploadDirIfNeeded() {
-        try {
-            final var uploadDirPath = Paths.get(uploadDir);
-
-            if (!Files.exists(uploadDirPath)) {
-                Files.createDirectories(uploadDirPath);
-            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

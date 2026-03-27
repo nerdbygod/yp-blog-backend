@@ -37,7 +37,7 @@ public class ImageControllerTest extends BaseControllerTest {
 
     @DynamicPropertySource
     static void overrideUploadDirProperty(DynamicPropertyRegistry registry) {
-        registry.add("image.uploadDir", TEMP_UPLOAD_DIR::toString);
+        registry.add("spring.servlet.multipart.location", TEMP_UPLOAD_DIR::toString);
     }
 
     @Test
