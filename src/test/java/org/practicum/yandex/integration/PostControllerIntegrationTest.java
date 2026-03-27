@@ -19,7 +19,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PostControllerTest extends BaseControllerTest {
+public class PostControllerIntegrationTest extends BaseControllerTest {
 
     @Test
     void testGetPosts_throwsBadRequest() throws Exception {

@@ -25,7 +25,7 @@ import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ImageControllerTest extends BaseControllerTest {
+public class ImageControllerIntegrationTest extends BaseControllerTest {
     @TempDir(cleanup = CleanupMode.ALWAYS)
     private static Path TEMP_UPLOAD_DIR = Paths.get("temp/uploads/image/");
 
