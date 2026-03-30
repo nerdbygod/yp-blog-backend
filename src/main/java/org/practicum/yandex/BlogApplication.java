@@ -1,17 +1,16 @@
 package org.practicum.yandex;
 
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@EnableWebMvc
-@Configuration
-@PropertySource(Constants.PROPERTIES_PATH)
-@ComponentScan(basePackages = Constants.ROOT_PACKAGE)
-public class BlogApplicationConfig implements WebMvcConfigurer {
+@SpringBootApplication
+public class BlogApplication implements WebMvcConfigurer {
+
+    public static void main(String[] args) {
+        SpringApplication.run(BlogApplication.class, args);
+    }
 
     // Required to prevent blocking of frontend requests due to CORS errors
     @Override

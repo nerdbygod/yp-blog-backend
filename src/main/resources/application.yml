@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  servlet:
+    multipart:
+      enabled: true
+      location: ${user.home}/uploads/image/
+      max-file-size: 5MB
+      max-request-size: 20MB
+
+server:
+  http2:
+    enabled: false

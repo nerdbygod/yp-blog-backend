@@ -1,33 +1,30 @@
 package org.practicum.yandex.integration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.practicum.yandex.BlogApplicationConfig;
 import org.practicum.yandex.Constants;
 import org.practicum.yandex.controller.dto.PostDto;
 import org.practicum.yandex.controller.dto.request.CreatePostRequest;
 import org.practicum.yandex.controller.dto.response.GetPostListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.Objects;
 
-@WebAppConfiguration
-@SpringJUnitConfig(classes = BlogApplicationConfig.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 public abstract class BaseControllerTest {
     protected static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -41,16 +38,13 @@ public abstract class BaseControllerTest {
     }
 
     @Autowired
-    protected WebApplicationContext context;
-
-    @Autowired
     protected JdbcTemplate jdbcTemplate;
 
+    @Autowired
     protected MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
         cleanupDatabase();
     }
 

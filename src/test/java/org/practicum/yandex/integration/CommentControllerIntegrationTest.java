@@ -17,7 +17,7 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CommentControllerTest extends BaseControllerTest {
+public class CommentControllerIntegrationTest extends BaseControllerTest {
     @Autowired
     private CommentService commentService;
 

@@ -1,5 +1,6 @@
-FROM tomcat:10-jdk21-temurin
-RUN rm -rf /usr/local/tomcat/webapps/*
-COPY build/libs/*.war /usr/local/tomcat/webapps/ROOT.war
+FROM eclipse-temurin:21-jre-jammy
+WORKDIR /app
+# COPY build/libs/*.jar /app/blog.jar  –– use this if you want image to be constructed from source build with Gradle
+COPY target/*.jar /app/blog.jar
 EXPOSE 8080
-CMD ["catalina.sh", "run"]
+ENTRYPOINT ["java", "-jar", "/app/blog.jar"]
